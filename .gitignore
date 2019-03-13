@@ -3,3 +3,5 @@
 *.fig
 *.xlsx
 *.csv
+*.npy
+*.emb
