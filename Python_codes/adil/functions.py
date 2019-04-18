@@ -2,8 +2,10 @@ import re
 import psycopg2
 import pymongo
 from pymongo import MongoClient
-from Bio import trie
+#from Bio import trie
+import bio 
 import pickle
+
 import numpy as np
 ########################## utility 
 

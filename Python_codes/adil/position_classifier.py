@@ -26,7 +26,7 @@ def flatten(l_of_ls):
 
 
 def get_article(_id):
-        with MongoClient() as conn:
+        with MongoClient('mongodb://10.73.42.40:27017/') as conn:
                 db = conn.biotextrepository
                 article = db.articles.find({"_id":_id}).next()
         return article
@@ -66,18 +66,6 @@ def get_model_params():
 
 
 
-#first get the word embeddings
-print('getting w2v embeddings  as features...')
-w2v_model = load_model('w2v.emb') 
-v_size = w2v_model.vector_size
-
-
-#get the annotation data
-print('getting annotations as data...')
-filepath = 'genes.npy'  #replace with corresponding annotation
-annotation, train_, g, train_ids = get_annotation(filepath)
-#get the classification model params - TODO: implment as input args
-w_size, iterations = get_model_params()
 
 def get_vector(x):
 	try:
@@ -161,21 +149,38 @@ def print_model_metrics(model, data, cl_re=False):
     if cl_re == True: print(classification_report(test_y, y_hat))
 
 
-print("generating data...")
-with Pool() as p: r = df(flatten(list(p.map(article_data, train_ids[:1000]))))
+#%% first get the word embeddings
+print('getting w2v embeddings  as features...')
+w2v_model = load_model('w2v.emb') 
+v_size = w2v_model.vector_size
 
-#r = df(flatten(list(map(article_data, train_ids[:1000]))))
+
+#%% get the annotation data
+print('getting annotations as data...')
+filepath = 'genes.npy'  #replace with corresponding annotation
+annotation, train_, g, train_ids = get_annotation(filepath)
+
+#%% get the classification model params - TODO: implment as input args
+w_size, iterations = get_model_params()
+
+
+#%% Generating data
+print("generating data...")
+#with Pool() as p: r = df(flatten(list(p.map(article_data, train_ids[:10]))))
+
+r = df(flatten(list(map(article_data, train_ids[:100]))))
 
 labels = sorted(set(list(r[w_size*v_size])))
+print(labels)
 cat_vec = dict(enumerate(list(to_categorical(list(range(len(labels)))))))
 to_label = dict(map(lambda x: (x[1], cat_vec[x[0]]), list(enumerate(labels))))
-
 
 
 data = load_data(train_val_test_split(r), to_label)
 callbacks = create_callbacks()
 pred_model = build_network(data["train_X"].shape[1], len(to_label))
 
+#%%
 print("fitting model...")
 pred_model.fit(x=data["train_X"], y=data["train_y"],
               batch_size=30,
@@ -186,7 +191,7 @@ pred_model.fit(x=data["train_X"], y=data["train_y"],
 
 print_model_metrics(pred_model, data)
 
-
+print('############ END of the script ###########')
 
 
 
