@@ -83,6 +83,22 @@ for x in fruits:
   print(x)
   
   
+#%% Plot
+import matplotlib.pyplot as plt
+#https://matplotlib.org/users/pyplot_tutorial.html
+plt.figure(1)                # the first figure
+plt.subplot(211)             # the first subplot in the first figure
+plt.plot([1,2,3,4], [1,4,9,16], 'r--')
+plt.xlim([0, 10])
+plt.ylim([0, 30])
+plt.legend({'curve 1'})
+plt.xlabel('Smarts')
+plt.ylabel('Probability')
+plt.title(r'$\sigma_i=15$' +'  Title here ')
+plt.text(3, 3, r'$\mu=100,\ \sigma=15$')
+plt.grid(True)
+plt.show()  
+  
   
 #%% Function 
 #A lambda function that adds 10 to the number passed in as an argument, and print the result:

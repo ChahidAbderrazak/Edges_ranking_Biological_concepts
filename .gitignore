@@ -10,3 +10,4 @@ Python_codes/adil/__pycache__/functions.cpython-36.pyc
 Python_codes/adil/__pycache__/emb_functions.cpython-36.pyc
 Python_codes/.vscode/launch.json
 *.json
+*.pyc
