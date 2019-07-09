@@ -16,6 +16,11 @@ vectors['tokens']=vectors['index']
 #vectors=vectors.drop(['index'], axis=1)
 #vectors.tail()
 
+#%%
+vectors0=vectors[122:135]
+
+sent_idx=list(vectors0[vectors0['tokens'].str.contains('\.', na = False)].index.values.astype(int))
+sent_idx.insert(0, -1)
 
 #  ----------------------  STATISTICAL PRE-PROCESSING  -------------------------
 #%% Split the test into sentences
@@ -24,11 +29,13 @@ sent_idx.insert(0, -1)
 
 list_of_series=list();
 list_of_sentences=list();
+list_of_sentences_with_dot=list();
 # loop for sentences
 for idx in range(len(sent_idx)-1):
      new_score=np.mean(vectors[sent_idx[idx]+1:sent_idx[idx+1]])
      if not np.isnan(np.asanyarray(new_score)).any():
          list_of_sentences.append(' '.join(vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]]))
+         list_of_sentences_with_dot.append(' '.join(vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]+1]))
          list_of_series.append(new_score)
 #     print(idx, 'weights', new_sents, 'sentence ', vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]])
 
@@ -55,6 +62,7 @@ annotate_text(vectors, 'functional')
 annotate_text(vectors, 'drugs')
 annotate_text(vectors, 'genes')
 Sub_dict=['diseases','functional','drugs','genes']
+Sub_dict=['diseases','genes']
 
 
 
@@ -91,7 +99,7 @@ Sigma = zeros((A.shape[0], A.shape[1]))
 
 Sigma[:A.shape[1], :A.shape[1]] = diag(S)
 Sigma_df = pd.DataFrame(Sigma,['C_sent '+str(x) for x in range(A.shape[0])],columns = ['C_dict '+str(x) for x in range(A.shape[1])])
-#Sigma_df[3:] = 0
+Sigma_df[3:] = 0
 # reconstruct matrix
 B = U.dot(Sigma.dot(VT))
 vect_sents_SVD= pd.DataFrame(B,columns=vect_sents.columns)
@@ -131,6 +139,37 @@ plt.show()
 
 topic_mean_U_Th=np.mean(topic_U[topic_U>0.1][Sub_dict])
 
+
+#%% get the top low ranked senstences
+Senstences_SVD_Ranking = pd.DataFrame(index=vect_sents.index)
+Senstences_SVD_Ranking=pd.DataFrame(data={'Sentences': list_of_sentences_with_dot})
+
+Sub_dict=['diseases','genes']
+CC=vect_sents_SVD[Sub_dict]
+sentence_sumk= CC.sum(axis = 1)
+vect_sents_SVD_DiGe=pd.DataFrame(index=vect_sents.index)
+vect_sents_SVD_DiGe['Rank'] =  sentence_sumk.values
+Senstences_SVD_Ranking['Rank DiGe'] =  sentence_sumk.values
+
+
+
+Sub_dict=['diseases','drugs']
+CC=vect_sents_SVD[Sub_dict]
+sentence_sumk= CC.sum(axis = 1)
+vect_sents_SVD_DiDr=pd.DataFrame(index=vect_sents.index)
+vect_sents_SVD_DiDr['Rank'] =  sentence_sumk.values
+Senstences_SVD_Ranking['Rank DiDr'] =  sentence_sumk.values
+
+
+Sub_dict=['drugs','genes']
+CC=vect_sents_SVD[Sub_dict]
+sentence_sumk= CC.sum(axis = 1)
+vect_sents_SVD_DrGe=pd.DataFrame(index=vect_sents.index)
+vect_sents_SVD_DrGe['Rank'] =  sentence_sumk.values
+Senstences_SVD_Ranking['Rank DrGe'] =  sentence_sumk.values
+
+
+Senstences_SVD_Ranking.to_csv('./Outputs/Senstences_ranking.csv')
 
 
 #%% covariance matrix of U
