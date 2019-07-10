@@ -2,27 +2,29 @@
 clear all; close all; addpath ./Function 
 
 %% Build the graph
-M=20
-N=3;
-A=randi([0 1],M,N)
-A_table=array2table(A)
+A=zeros(10,2);
+A(:,2)=2*ones(10,1);
+A(1:4,1)=20*ones(4,1);
+A(5:end,1)=6*ones(6,1);
+
+A=randi([0 1],10,2)
+
 
 [U,S,V] =svds(A);
 figure;scatter(A(:,1),A(:,2));hold on; scatter(U(:,1),U(:,2))
 
 
-figure;histogram(A(:,1),M);hold on;histogram(A(:,2),M); legend('Dim1','Dim2')
+figure;histogram(A(:,1),10);hold on;histogram(A(:,2),10); legend('Dim1','Dim2')
 
 A
 U 
 S
 V
 
-% 
-S1=S;S1(2,2:end)=0
+S(2,2)=0
 
-A2=U*S1*V;
-Q=S1*V';
+A2=U*S*V;
+Q=S*V';
 
 QX = Q(:,1);                                            % Isolate Line ‘x’ Coordinates
 QY = Q(:,2);                                            % Isolate Line ‘y’ Coordinates
@@ -47,14 +49,14 @@ grid
 % A(2,3)=5;
 % A(2,4)=6;
 % % A(2,6)=2;
-% A(3,4)=M;
+% A(3,4)=10;
 % % A(5,6)=15;
 % 
 % A=A+A';
 % A(A<=1)=0
-% % A(4,4)=M
+% % A(4,4)=10
 % 
-% % A(4,4)=M
+% % A(4,4)=10
 % % A=A+diag(sum(A));
 % A=(A-min(min(A)))/max(max(A))
 % 

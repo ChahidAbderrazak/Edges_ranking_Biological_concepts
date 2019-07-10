@@ -32,12 +32,13 @@ list_of_sentences=list();
 list_of_sentences_with_dot=list();
 # loop for sentences
 for idx in range(len(sent_idx)-1):
-     new_score=np.mean(vectors[sent_idx[idx]+1:sent_idx[idx+1]])
-     if not np.isnan(np.asanyarray(new_score)).any():
-         list_of_sentences.append(' '.join(vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]]))
-         list_of_sentences_with_dot.append(' '.join(vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]+1]))
-         list_of_series.append(new_score)
-#     print(idx, 'weights', new_sents, 'sentence ', vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]])
+    sent_start=sent_idx[idx]+1
+    sent_end=sent_idx[idx+1]+1
+    new_score=np.mean(vectors[sent_start:sent_end])
+    if not np.isnan(np.asanyarray(new_score)).any():
+        list_of_sentences.append(' '.join(vectors['tokens'][sent_start:sent_end]))
+        list_of_series.append(new_score)
+#    print(idx, 'weights', new_sents, 'sentence ', vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]])
 
 
 vect_sents = pd.DataFrame(list_of_series,list_of_sentences)
@@ -142,7 +143,7 @@ topic_mean_U_Th=np.mean(topic_U[topic_U>0.1][Sub_dict])
 
 #%% get the top low ranked senstences
 Senstences_SVD_Ranking = pd.DataFrame(index=vect_sents.index)
-Senstences_SVD_Ranking=pd.DataFrame(data={'Sentences': list_of_sentences_with_dot})
+Senstences_SVD_Ranking=pd.DataFrame(data={'Sentences': list_of_sentences})
 
 Sub_dict=['diseases','genes']
 CC=vect_sents_SVD[Sub_dict]
