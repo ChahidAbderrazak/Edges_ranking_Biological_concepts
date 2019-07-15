@@ -80,7 +80,7 @@ def Split_Doc_into_sentences(vectors,word_Th,weight_sent):
 
     list_of_sentences=list();     list_of_series=list();
     list_of_sentences_full=list();list_of_series_full=list();
-    cnt=0;empty_sent=0
+    cnt=0;empty_sent=0;Sentence_ID=list()
     # loop for sentences
     for idx in range(len(sent_idx)-1):
     #    cnt=cnt+1; print('cnt=',cnt)
@@ -100,6 +100,7 @@ def Split_Doc_into_sentences(vectors,word_Th,weight_sent):
                 list_of_series.append(new_score)
                 list_of_sentences_full.append(' '.join(vectors['tokens'][sent_start:sent_end]))
                 list_of_series_full.append(new_score)
+                Sentence_ID.append(idx)
 
             else:
     #            print('empty sentences starts at : ',sent_start)
@@ -107,10 +108,13 @@ def Split_Doc_into_sentences(vectors,word_Th,weight_sent):
 
     #    print(idx, 'weights', new_sents, 'sentence ', vectors['tokens'][sent_idx[idx]+1:sent_idx[idx+1]])
 
-    print('The input sentences have ',empty_sent ,' empty sentences which were neglected')
+#    print('The input sentences have ',empty_sent ,' empty sentences which were neglected')
 
-    vect_sents_full = pd.DataFrame(list_of_series_full,list_of_sentences_full)
-    vect_sents = pd.DataFrame(list_of_series,list_of_sentences)
+    vect_sents_full = pd.DataFrame(list_of_series_full,Sentence_ID)
+    vect_sents_full['sentence']=list_of_sentences_full;
+    vect_sents = pd.DataFrame(list_of_series,Sentence_ID)
+    vect_sents['sentence']=list_of_sentences;
+
     vect_sents.plot()
     plt.legend(list(vect_sents.columns))
     plt.xlabel('Sentenes')
@@ -136,13 +140,14 @@ def Statistical_ranking_scores(vect_sents, sub_dict):
 
     return topic_mean, topic_std, topic_dot
 
+
 def SVD_ranking_scores(vect_sents, sub_dict, list_of_sentences_full,list_of_sentences ):
     from scipy.linalg import svd
     from numpy import diag
     from numpy import dot
     from numpy import zeros
 
-
+    vect_sents=vect_sents.drop(columns='sentence')
     A = np.array(vect_sents)
 
     U, S, VT = svd(A)
@@ -254,15 +259,24 @@ def PCA_ranking_scores(vect_sents, sub_dict, list_of_sentences_full,list_of_sent
 
 def Ranking_validation(filename):
     from scipy.stats import pearsonr
+    from scipy.stats import spearmanr
     ranks = pd.read_csv('./Outputs/Validation/'+ filename, sep=',',index_col=False)
 
     rank_CHR=ranks['Christophe']
-    rank_SVD=ranks['Magbubah']
-    rank_MHB=ranks['SVD - DiDr']
+    rank_MHB=ranks['Magbubah']
+    rank_SVD=ranks['SVD - DiDr']
 
 
-    corr_CM, p_value_CM = pearsonr(rank_CHR, rank_MHB)
-    corr_CS, p_value_CS = pearsonr(rank_CHR, rank_SVD)
-    corr_SM, p_value_SM = pearsonr(rank_SVD, rank_MHB)
-    return
+    Pcorr_CM, p_value_CM = pearsonr(rank_CHR, rank_MHB)
+    Pcorr_CS, p_value_CS = pearsonr(rank_CHR, rank_SVD)
+    Pcorr_SM, p_value_SM = pearsonr(rank_SVD, rank_MHB)
+
+    Scorr_CM, Sp_value_CM = spearmanr(rank_CHR, rank_MHB)
+    Scorr_CS, Sp_value_CS = spearmanr(rank_CHR, rank_SVD)
+    Scorr_SM, Sp_value_SM = spearmanr(rank_SVD, rank_MHB)
+
+    corr_ranks=[ Scorr_CM, Scorr_CS, Scorr_SM ]#, Pcorr_CM, Pcorr_CS, Pcorr_SM]
+    print ('[Pcorr_CM, Pcorr_CS, Pcorr_SM, Scorr_CM, Scorr_CS, Scorr_SM]=',corr_ranks)
+
+    return corr_ranks
 
